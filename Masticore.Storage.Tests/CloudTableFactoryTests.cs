@@ -1,9 +1,4 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Masticore.Storage;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Masticore.Storage.Tests
@@ -17,7 +12,7 @@ namespace Masticore.Storage.Tests
         public async Task GetTableAsyncTest()
         {
             // Arrange
-            CloudTableFactory factory = new CloudTableFactory();
+            var factory = new CloudTableFactory();
 
             // Act
             var table = await factory.GetTableAsync(TestTableName);
@@ -30,7 +25,7 @@ namespace Masticore.Storage.Tests
         public async Task DeleteTableAsyncTest()
         {
             // Arrange
-            CloudTableFactory factory = new CloudTableFactory();
+            var factory = new CloudTableFactory();
 
             // Act
             var table = await factory.GetTableAsync(TestTableName);

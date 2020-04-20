@@ -1,7 +1,7 @@
-﻿using Microsoft.WindowsAzure.Storage.Table;
+﻿using System;
+using Microsoft.WindowsAzure.Storage.Table;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Masticore;
 
 namespace Masticore.Storage
 {
@@ -22,11 +22,6 @@ namespace Masticore.Storage
         /// </summary>
         public virtual string PartitionName { get; set; }
 
-        /// <summary>
-        /// Gets or sets the partition name underlying this repository
-        /// </summary>
-        public virtual string StorageConnectionString { get; set; }
-
         protected IStorageTableFactory TableFactory { get; set; }
 
         /// <summary>
@@ -44,7 +39,6 @@ namespace Masticore.Storage
         /// <returns></returns>
         protected virtual Task<CloudTable> GetTableAsync()
         {
-            TableFactory.StorageConnectionString = StorageConnectionString;
             return TableFactory.GetTableAsync(TableName);
         }
         /// <summary>
@@ -63,7 +57,7 @@ namespace Masticore.Storage
                 newModel.PartitionKey = existing.PartitionKey;
                 newModel.RowKey = existing.RowKey;
                 newModel.ETag = existing.ETag;
-                newModel.Timestamp = System.DateTimeOffset.Now;
+                newModel.Timestamp = System.DateTimeOffset.UtcNow;
                 
             }//Not sure we need this else?
             else
@@ -74,7 +68,6 @@ namespace Masticore.Storage
 
             return newModel;
         }
-        #region IStorageCrud Implementation
 
         /// <summary>
         /// Inserts the given table entity model
@@ -84,9 +77,9 @@ namespace Masticore.Storage
         public virtual async Task<ModelType> CreateAsync(ModelType model)
         {
             // Write to the table
-            CloudTable table = await GetTableAsync();
+            var table = await GetTableAsync();
             model.PartitionKey = PartitionName;
-            TableResult result = await table.InsertEntityAsync(model);
+            var result = await table.InsertEntityAsync(model);
             return (ModelType)result.Result;
         }
 
@@ -96,7 +89,7 @@ namespace Masticore.Storage
         /// <returns></returns>
         public virtual async Task<IEnumerable<ModelType>> ReadAllAsync()
         {
-            CloudTable table = await GetTableAsync();
+            var table = await GetTableAsync();
             return await table.RetrieveEntitiesAsync<ModelType>(PartitionName);
         }
 
@@ -107,7 +100,7 @@ namespace Masticore.Storage
         /// <returns></returns>
         public virtual async Task<ModelType> ReadAsync(string id)
         {
-            CloudTable table = await GetTableAsync();
+            var table = await GetTableAsync();
             return await table.RetrieveEntityAsync<ModelType>(PartitionName, id);
         }
 
@@ -118,14 +111,14 @@ namespace Masticore.Storage
         /// <returns></returns>
         public virtual async Task<ModelType> UpdateAsync(ModelType model)
         {
-            CloudTable table = await GetTableAsync();
-            ModelType existingModel = await table.RetrieveEntityAsync<ModelType>(PartitionName, model.RowKey);
+            var table = await GetTableAsync();
+            var existingModel = await table.RetrieveEntityAsync<ModelType>(PartitionName, model.RowKey);
 
             //Either merge via class definition or use the ITableEntity
-            ModelType merge = MergeEntities(existingModel, model);
-           
-           
-            TableResult result = await table.ReplaceEntityAsync(merge);
+            var merge = MergeEntities(existingModel, model);
+            merge.ETag = model.ETag ?? merge.ETag;
+
+            var result = await table.ReplaceEntityAsync(merge);
             return (ModelType)result.Result;
         }
 
@@ -136,11 +129,11 @@ namespace Masticore.Storage
         /// <returns></returns>
         public virtual async Task DeleteAsync(string id)
         {
-            CloudTable table = await GetTableAsync();
-            DynamicTableEntity tableEntity = await table.RetrieveEntityAsync<DynamicTableEntity>(PartitionName, id);
+            var table = await GetTableAsync();
+            var tableEntity = await table.RetrieveEntityAsync<DynamicTableEntity>(PartitionName, id);
             await table.DeleteEntityAsync(tableEntity);
         }
 
-        #endregion
+        public Func<string> GetStorageConnectionString { get; set; }
     }
 }

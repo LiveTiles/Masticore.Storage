@@ -1,9 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Masticore.Storage;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 
@@ -35,11 +31,11 @@ namespace Masticore.Storage.Tests
         public void GetFileUrlTest()
         {
             // Arrange
-            StorageFileService<TestFile> fileService = new StorageFileService<TestFile>();
-            TestFile file = new TestFile();
+            var fileService = new StorageFileService<TestFile>();
+            var file = new TestFile();
 
             // Act
-            string name = fileService.GetFileUrl(file);
+            var name = fileService.GetFileUrl(file);
 
             // Assert
             Assert.IsNotNull(name);
@@ -51,9 +47,9 @@ namespace Masticore.Storage.Tests
         public async Task UploadAsyncTest()
         {
             // Arrange
-            StorageFileService<TestFile> fileService = new StorageFileService<TestFile>();
-            TestFile file = new TestFile();
-            Stream stream = LoadFileStream();
+            var fileService = new StorageFileService<TestFile>();
+            var file = new TestFile();
+            var stream = LoadFileStream();
 
             // Act
             await fileService.UploadAsync(file, stream);
@@ -65,13 +61,13 @@ namespace Masticore.Storage.Tests
         public async Task DownloadAsyncTest()
         {
             // Arrange
-            StorageFileService<TestFile> fileService = new StorageFileService<TestFile>();
-            TestFile file = new TestFile();
-            Stream stream = LoadFileStream();
+            var fileService = new StorageFileService<TestFile>();
+            var file = new TestFile();
+            var stream = LoadFileStream();
             await fileService.UploadAsync(file, stream);
 
             // Act
-            Stream readStream = await fileService.DownloadAsync(file);
+            var readStream = await fileService.DownloadAsync(file);
 
             // Assert
             Assert.IsTrue(stream.Length == readStream.Length && readStream.Length > 0);
@@ -81,11 +77,11 @@ namespace Masticore.Storage.Tests
         public async Task DeleteAsyncTest()
         {
             // Arrange - Load file and ensure existence
-            StorageFileService<TestFile> fileService = new StorageFileService<TestFile>();
-            TestFile file = new TestFile();
-            Stream stream = LoadFileStream();
+            var fileService = new StorageFileService<TestFile>();
+            var file = new TestFile();
+            var stream = LoadFileStream();
             await fileService.UploadAsync(file, stream);
-            Stream readStream = await fileService.DownloadAsync(file);
+            var readStream = await fileService.DownloadAsync(file);
             Assert.IsTrue(stream.Length == readStream.Length && readStream.Length > 0);
 
             // Act
@@ -96,16 +92,12 @@ namespace Masticore.Storage.Tests
             Assert.IsNull(assertStream);
         }
 
-        #region Support Methods
-
 
         private static Stream LoadFileStream()
         {
-            string path = Path.Combine(Environment.CurrentDirectory, "../../Geordi.jpg");
+            var path = Path.Combine(Environment.CurrentDirectory, "../../Geordi.jpg");
             Stream stream = File.OpenRead(path);
             return stream;
         }
-
-        #endregion
     }
 }

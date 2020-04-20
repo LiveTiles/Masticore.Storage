@@ -23,7 +23,7 @@ namespace Masticore.Storage
             System.Diagnostics.Trace.TraceInformation("Asynchronously inserting entity into azure table '{0}' with partition '{1}' and row '{2}'", table.Name, entity.PartitionKey, entity.RowKey);
 
             // Create the TableOperation that inserts the customer entity.
-            TableOperation insertOperation = TableOperation.Insert(entity);
+            var insertOperation = TableOperation.Insert(entity);
 
             // Execute the operation asynchronously
             return table.ExecuteAsync(insertOperation);
@@ -40,7 +40,7 @@ namespace Masticore.Storage
             System.Diagnostics.Trace.TraceInformation("Asynchronously inserting or replacing entity into azure table '{0}' with partition '{1}' and row '{2}'", table.Name, entity.PartitionKey, entity.RowKey);
 
             // Create the InsertOrReplace TableOperation
-            TableOperation insertOrReplaceOperation = TableOperation.InsertOrReplace(entity);
+            var insertOrReplaceOperation = TableOperation.InsertOrReplace(entity);
 
             // Execute the operation asynchronously
             return table.ExecuteAsync(insertOrReplaceOperation);
@@ -57,7 +57,7 @@ namespace Masticore.Storage
             System.Diagnostics.Trace.TraceInformation("Asynchronously replacing entity into azure table '{0}' with partition '{1}' and row '{2}'", table.Name, entity.PartitionKey, entity.RowKey);
 
             // Create the InsertOrReplace TableOperation
-            TableOperation replaceOperation = TableOperation.Replace(entity);
+            var replaceOperation = TableOperation.Replace(entity);
 
             // Execute the operation asynchronously
             return table.ExecuteAsync(replaceOperation);
@@ -74,7 +74,7 @@ namespace Masticore.Storage
             System.Diagnostics.Trace.TraceInformation("Asynchronously deleting entity from azure table '{0}' with partition '{1}' and row '{2}'", table.Name, entity.PartitionKey, entity.RowKey);
 
             // Create the Delete TableOperation
-            TableOperation deleteOperation = TableOperation.Delete(entity);
+            var deleteOperation = TableOperation.Delete(entity);
 
             // Execute the operation asynchronously
             return table.ExecuteAsync(deleteOperation);
@@ -94,12 +94,12 @@ namespace Masticore.Storage
             System.Diagnostics.Trace.TraceInformation("Asynchronously retrieving entity from azure table '{0}' with partition '{1}' and row '{2}'", table.Name, partitionKey, rowKey);
 
             // Setup the retrieve
-            TableOperation retrieveOperation = TableOperation.Retrieve<EntityType>(partitionKey, rowKey);
+            var retrieveOperation = TableOperation.Retrieve<EntityType>(partitionKey, rowKey);
 
             // Execute the operation async
-            TableResult retrievedResult = await table.ExecuteAsync(retrieveOperation);
+            var retrievedResult = await table.ExecuteAsync(retrieveOperation);
 
-            EntityType entity = (EntityType)retrievedResult.Result;
+            var entity = (EntityType)retrievedResult.Result;
 
             return entity;
         }
@@ -118,12 +118,12 @@ namespace Masticore.Storage
         {
             System.Diagnostics.Trace.TraceInformation("Executing query for azure table '{0}'", table.Name);
 
-            List<TableEntityType> items = new List<TableEntityType>();
+            var items = new List<TableEntityType>();
             TableContinuationToken token = null;
 
             do
             {
-                TableQuerySegment<TableEntityType> seg = await table.ExecuteQuerySegmentedAsync<TableEntityType>(query, token);
+                var seg = await table.ExecuteQuerySegmentedAsync<TableEntityType>(query, token);
                 token = seg.ContinuationToken;
                 items.AddRange(seg);
                 if (onProgress != null)
@@ -149,7 +149,7 @@ namespace Masticore.Storage
         {
             System.Diagnostics.Trace.TraceInformation("Retrieving all entities from azure table '{0}' in partition '{1}'", table.Name, partitionKey);
 
-            TableQuery<EntityType> query = new TableQuery<EntityType>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey));
+            var query = new TableQuery<EntityType>().Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, partitionKey));
 
             if (takeLimit.HasValue)
                 query = query.Take(takeLimit.Value);
@@ -168,7 +168,7 @@ namespace Masticore.Storage
         {
             System.Diagnostics.Trace.TraceInformation("Retrieving all entities from azure table '{0}'", table.Name);
 
-            TableQuery<EntityType> query = new TableQuery<EntityType>();
+            var query = new TableQuery<EntityType>();
 
             if (takeLimit.HasValue)
                 query = query.Take(takeLimit.Value);

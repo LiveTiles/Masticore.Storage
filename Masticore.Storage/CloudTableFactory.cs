@@ -9,6 +9,7 @@ namespace Masticore.Storage
     /// </summary>
     public interface IStorageTableFactory : INeedStorageConnectionString
     {
+        string StorageConnectionString { get; set; }
         /// <summary>
         /// Async deletes the given table, destroying all data
         /// </summary>
@@ -72,9 +73,9 @@ namespace Masticore.Storage
         protected virtual async Task<CloudTable> GetTableReferenceAsync(string tableName)
         {
             // Pull the client async
-            CloudTableClient client = await GetTableClientAsync();
+            var client = await GetTableClientAsync();
             // Get a reference to the table
-            CloudTable table = client.GetTableReference(tableName);
+            var table = client.GetTableReference(tableName);
             await CreateIfNotExistsAsync(table);
             return table;
         }
@@ -91,7 +92,7 @@ namespace Masticore.Storage
                 return _tables[tableName];
 
             // Async create it, since it wasn't found
-            CloudTable table = await GetTableReferenceAsync(tableName);
+            var table = await GetTableReferenceAsync(tableName);
 
             // Save to cache
             _tables[tableName] = table;
@@ -106,7 +107,7 @@ namespace Masticore.Storage
         /// <returns></returns>
         public virtual async Task DeleteTableAsync(string tableName)
         {
-            CloudTable cloudTable = await GetTableAsync(tableName);
+            var cloudTable = await GetTableAsync(tableName);
             _tables.Remove(tableName);
             if (await cloudTable.ExistsAsync())
                 await cloudTable.DeleteAsync();

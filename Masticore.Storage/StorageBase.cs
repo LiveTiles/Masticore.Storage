@@ -10,8 +10,6 @@ namespace Masticore.Storage
     /// </summary>
     public abstract class StorageBase : INeedStorageConnectionString
     {
-        #region Properties
-
         /// <summary>
         /// Gets or sets the name of the connection string for connecting to storage
         /// </summary>
@@ -32,13 +30,9 @@ namespace Masticore.Storage
         {
             get
             {
-                if (!_useDevelopmentStorage.HasValue)
-                {
-                    bool val = false;
-                    bool.TryParse(ConfigurationManager.AppSettings["BlobStorageBase.UseDevelopmentStorage"], out val);
-                    _useDevelopmentStorage = val;
-                }
-
+                if (_useDevelopmentStorage.HasValue) return _useDevelopmentStorage.Value;
+                bool.TryParse(ConfigurationManager.AppSettings["BlobStorageBase.UseDevelopmentStorage"], out var val);
+                _useDevelopmentStorage = val;
                 return _useDevelopmentStorage.Value;
             }
         }
@@ -49,30 +43,21 @@ namespace Masticore.Storage
         /// </summary>
         public virtual string StorageConnectionString
         {
-            get
-            {
-                if (_connectionString == null)
-                {
-                    // If it's dev, force the dev connection string
-                    if (UseDevelopmentStorage)
-                        return "UseDevelopmentStorage=true";
+            get => _connectionString = _connectionString ?? FindConnectionString();
+            set => _connectionString = value;
+        }
 
-                    if (ConnectionStringName == null)
-                        throw new ArgumentNullException(nameof(ConnectionStringName));
+        private string FindConnectionString()
+        {
+            // If it's dev, force the dev connection string
+            if (UseDevelopmentStorage)
+                return "UseDevelopmentStorage=true";
 
-                    var connString = ConfigurationManager.ConnectionStrings[ConnectionStringName];
-                    if (connString == null)
-                        throw new Exception(string.Format("Cannot find ConnectionString named '{0}'", ConnectionStringName));
+            if (ConnectionStringName == null)
+                throw new ArgumentNullException(nameof(ConnectionStringName));
 
-                    _connectionString = connString.ConnectionString;
-                }
-
-                return _connectionString;
-            }
-            set
-            {
-                _connectionString = value;
-            }
+            var connString = ConfigurationManager.ConnectionStrings[ConnectionStringName];
+            return connString?.ConnectionString ?? GetStorageConnectionString?.Invoke();
         }
 
         CloudStorageAccount _account;
@@ -80,16 +65,9 @@ namespace Masticore.Storage
         /// <summary>
         /// Gets the cloud storage account for this storage manager, loading it using the ConnectionString property
         /// </summary>
-        protected virtual CloudStorageAccount Account
-        {
-            get
-            {
-                _account = _account ?? CloudStorageAccount.Parse(StorageConnectionString);
+        protected virtual CloudStorageAccount Account => _account = _account ?? CloudStorageAccount.Parse(StorageConnectionString);
 
-                return _account;
-            }
-        }
-
-        #endregion
+        protected string AccountName => Account.Credentials.AccountName;
+        public Func<string> GetStorageConnectionString { get; set; }
     }
 }

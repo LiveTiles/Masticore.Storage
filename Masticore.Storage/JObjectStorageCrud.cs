@@ -19,8 +19,6 @@ namespace Masticore.Storage
             _dynamicStorage = dynamicStorage;
         }
 
-        #region IStorageCrud Implementation
-
         public string TableName
         {
             get
@@ -47,23 +45,10 @@ namespace Masticore.Storage
             }
         }
 
-        public string StorageConnectionString
-        {
-            get
-            {
-                return _dynamicStorage.StorageConnectionString;
-            }
-
-            set
-            {
-                _dynamicStorage.StorageConnectionString = value;
-            }
-        }
-
         public async Task<JObject> CreateAsync(JObject model)
         {
             // Map into a DynamicTableEntity
-            DynamicTableEntity entity = model.ToDynamicEntity();
+            var entity = model.ToDynamicEntity();
             entity.RowKey = KeyGenerator.NextTicksDescendingRowKey();
             // Create and return as JObject
             entity = await _dynamicStorage.CreateAsync(entity);
@@ -72,13 +57,13 @@ namespace Masticore.Storage
 
         public async Task<IEnumerable<JObject>> ReadAllAsync()
         {
-            IEnumerable<DynamicTableEntity> tableEntities = await _dynamicStorage.ReadAllAsync();
+            var tableEntities = await _dynamicStorage.ReadAllAsync();
             return tableEntities.Select(te => te.ToJObject());
         }
 
         public async Task<JObject> ReadAsync(string id)
         {
-            DynamicTableEntity tableEntity = await _dynamicStorage.ReadAsync(id);
+            var tableEntity = await _dynamicStorage.ReadAsync(id);
 
             if (tableEntity == null)
                 throw new Exception(string.Format("List item {0} cannot be found", id));
@@ -88,7 +73,7 @@ namespace Masticore.Storage
 
         public async Task<JObject> UpdateAsync(JObject model)
         {
-            DynamicTableEntity entity = model.ToDynamicEntity();
+            var entity = model.ToDynamicEntity();
             entity = await _dynamicStorage.UpdateAsync(entity);
             return entity.ToJObject();
         }
@@ -98,6 +83,10 @@ namespace Masticore.Storage
             await _dynamicStorage.DeleteAsync(id);
         }
 
-        #endregion
+        public Func<string> GetStorageConnectionString
+        {
+            get => _dynamicStorage.GetStorageConnectionString;
+            set => _dynamicStorage.GetStorageConnectionString = value;
+        }
     }
 }

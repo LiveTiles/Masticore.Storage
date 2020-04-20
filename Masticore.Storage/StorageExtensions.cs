@@ -22,9 +22,9 @@ namespace Masticore.Storage
 		{
 			if (storageAccount == null || alterCorsRules == null) throw new ArgumentNullException();
 
-			CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+			var blobClient = storageAccount.CreateCloudBlobClient();
 
-			ServiceProperties serviceProperties = blobClient.GetServiceProperties();
+			var serviceProperties = blobClient.GetServiceProperties();
 
 			serviceProperties.Cors = alterCorsRules(serviceProperties.Cors) ?? new CorsProperties();
 
@@ -41,8 +41,8 @@ namespace Masticore.Storage
 			if (storageAccount == null || string.IsNullOrEmpty(defaultServiceVersion))
 				throw new ArgumentNullException();
 
-			CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
-			ServiceProperties serviceProperties = blobClient.GetServiceProperties();
+			var blobClient = storageAccount.CreateCloudBlobClient();
+			var serviceProperties = blobClient.GetServiceProperties();
 			serviceProperties.DefaultServiceVersion = defaultServiceVersion;
 
 			blobClient.SetServiceProperties(serviceProperties);
@@ -74,7 +74,7 @@ namespace Masticore.Storage
 			if (account == null || serviceProperties == null)
 				throw new ArgumentNullException();
 
-			CloudBlobClient blobClient = account.CreateCloudBlobClient();
+			var blobClient = account.CreateCloudBlobClient();
 			await blobClient.SetServicePropertiesAsync(serviceProperties);
 
 		}
